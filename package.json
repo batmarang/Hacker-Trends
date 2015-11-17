@@ -1,0 +1,22 @@
+{
+  "name": "hacker-trends",
+  "version": "1.0.0",
+  "description": "hacker news add-on that features data analysis",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/batmarang/Hacker-Trends.git"
+  },
+  "author": "Ben Tan, Mike Smith, Samara H",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/batmarang/Hacker-Trends/issues"
+  },
+  "homepage": "https://github.com/batmarang/Hacker-Trends#readme",
+  "dependencies": {
+    "hapi": "^11.1.0"
+  }
+}
