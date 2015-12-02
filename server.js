@@ -1,7 +1,13 @@
 var Hapi = require('hapi');
 var request = require('request');
+var Sequelize = require('sequelize');
+var config = require('config');
 //var Promise = require('bluebird');
 //var request = Promise.promisifyAll(require('request'));
+
+var dbConfig = config.get('Database.dbConfig');
+
+var sequelize = new Sequelize('postgres://localhost/hacker-news');
 
 var server = new Hapi.Server();
 
