@@ -2,12 +2,20 @@ var Hapi = require('hapi');
 var request = require('request');
 var Sequelize = require('sequelize');
 var config = require('config');
+
+var StoryModel = require('./models/Story');
+var CommentModel = require('./models/Comment');
+
 //var Promise = require('bluebird');
 //var request = Promise.promisifyAll(require('request'));
-
-var dbConfig = config.get('Database.dbConfig');
+//var dbConfig = config.get('Database.dbConfig');
 
 var sequelize = new Sequelize('postgres://localhost/hacker-news');
+var Story = sequelize.define('stories', StoryModel);
+var Comment = sequelize.define('comments', CommentModel);
+Story.sync();
+Comment.sync();
+
 
 var server = new Hapi.Server();
 
@@ -32,10 +40,42 @@ server.start(function () {
 });
 
 function generateDatabase() {
-  for (var i = 121003; i < 121010; i++) {
+  for (var i = 121000; i < 122000; i++) {
     request.get(`https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty`, function (err, response, body) {
       var body = JSON.parse(body);
-      console.log(body);
+      (body.type === 'story') ? addToStories(body) : addToComments(body);
+      //console.log(body);
     });
   }
+}
+
+// text for stories and comments > 255 chars. try to analyze trends beforehand
+// instead of saving full text
+
+function addToStories(story) {
+  Story.findOrCreate({
+    where : { id : story.id },
+    defaults : {
+      descendants : story.descendants,
+      score : story.score,
+      //text : story.text,
+      time : story.time,
+      title : story.title,
+      type : story.type,
+      url : story.url
+    }
+  });
+}
+
+function addToComments(comment) {
+  Comment.findOrCreate({
+    where : { id : comment.id },
+    defaults : {
+      parent : comment.parent,
+      //text : comment.text,
+      time : comment.time,
+      title : comment.title,
+      type : comment.type
+    }
+  });
 }

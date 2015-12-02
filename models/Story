@@ -1,6 +1,0 @@
-var Sequelize = require('sequelize');
-
-var UserModel = {
-  type : Sequelize.STRING,
-
-};
