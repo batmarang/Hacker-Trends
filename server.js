@@ -1,12 +1,21 @@
 var Hapi = require('hapi');
-var http = require('http');
-var Promise = require('bluebird');
-//var request = require('request');
+var request = require('request');
+var Sequelize = require('sequelize');
+var config = require('config');
 
-// problem : the API presents the posts in the form of ids. in order to get the text, urls, etc
-// we'd need to make as many request as there are posts.
+var StoryModel = require('./models/Story');
+var CommentModel = require('./models/Comment');
 
-var request = Promise.promisifyAll(require('request'));
+//var Promise = require('bluebird');
+//var request = Promise.promisifyAll(require('request'));
+//var dbConfig = config.get('Database.dbConfig');
+
+var sequelize = new Sequelize('postgres://localhost/hacker-news');
+var Story = sequelize.define('stories', StoryModel);
+var Comment = sequelize.define('comments', CommentModel);
+Story.sync();
+Comment.sync();
+
 
 var server = new Hapi.Server();
 
@@ -15,37 +24,13 @@ server.connection({
   port: 3000
 });
 
+generateDatabase();
+
 server.route({
   method: 'GET',
   path: '/',
   handler: function (req, reply) {
-
-    //Makes request to Hacker News API for top news items
-    request.get('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty', function(err, response, body) {
-        if (!err && response.statusCode === 200) {
-          var body = JSON.parse(body);
-          // 500 is the default #responses returned by the API.
-          // TODO: Find out how to limit API request
-          var results = body.slice(500-5);
-          console.log(results);
-
-          results.forEach(function (elem) {
-            console.log(elem);
-          });
-
-        }
-      });
-    // request.getAsync('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
-      // .then(function(result) {
-      //     console.log('yo', result.req.res.request);
-      //     if (!err && res.statusCode === 200) {
-      //       var body = JSON.parse(body);
-      //       // 500 is the default #responses returned by the API.
-      //       // TODO: Find out how to limit API request
-      //       results = body.slice(500-5);
-      //       console.log(results);
-      //     }
-      //   });
+    // Eventually serve analysis of trends
     reply('Hello, world!');
   }
 });
@@ -53,3 +38,44 @@ server.route({
 server.start(function () {
   console.log('Server running on: ', server.info.uri);
 });
+
+function generateDatabase() {
+  for (var i = 121000; i < 122000; i++) {
+    request.get(`https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty`, function (err, response, body) {
+      var body = JSON.parse(body);
+      (body.type === 'story') ? addToStories(body) : addToComments(body);
+      //console.log(body);
+    });
+  }
+}
+
+// text for stories and comments > 255 chars. try to analyze trends beforehand
+// instead of saving full text
+
+function addToStories(story) {
+  Story.findOrCreate({
+    where : { id : story.id },
+    defaults : {
+      descendants : story.descendants,
+      score : story.score,
+      //text : story.text,
+      time : story.time,
+      title : story.title,
+      type : story.type,
+      url : story.url
+    }
+  });
+}
+
+function addToComments(comment) {
+  Comment.findOrCreate({
+    where : { id : comment.id },
+    defaults : {
+      parent : comment.parent,
+      //text : comment.text,
+      time : comment.time,
+      title : comment.title,
+      type : comment.type
+    }
+  });
+}
