@@ -1,6 +1,7 @@
 var Hapi = require('hapi');
 var request = require('request');
 var Sequelize = require('sequelize');
+var pg = require('pg');
 var config = require('config');
 
 var StoryModel = require('./models/Story');
@@ -41,7 +42,7 @@ server.start(function () {
 
 function generateDatabase() {
   for (var i = 121000; i < 122000; i++) {
-    request.get(`https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty`, function (err, response, body) {
+    request.get("https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty", function (err, response, body) {
       var body = JSON.parse(body);
       (body.type === 'story') ? addToStories(body) : addToComments(body);
       //console.log(body);
