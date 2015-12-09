@@ -2,6 +2,8 @@ var Hapi = require('hapi');
 var request = require('request');
 var Sequelize = require('sequelize');
 var config = require('config');
+var storiesDb = require('./data/stories');
+var commentsDb = require('./data/comments');
 
 var StoryModel = require('./models/Story');
 var CommentModel = require('./models/Comment');
@@ -24,13 +26,12 @@ server.connection({
   port: 3000
 });
 
-generateDatabase();
+//generateDatabase();
 
 server.route({
   method: 'GET',
   path: '/',
   handler: function (req, reply) {
-    // Eventually serve analysis of trends
     reply('Hello, world!');
   }
 });
@@ -40,11 +41,13 @@ server.start(function () {
 });
 
 function generateDatabase() {
+  var stories = [];
+  var comments = [];
+  var count = 0;
   for (var i = 121000; i < 122000; i++) {
     request.get(`https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty`, function (err, response, body) {
       var body = JSON.parse(body);
       (body.type === 'story') ? addToStories(body) : addToComments(body);
-      //console.log(body);
     });
   }
 }
