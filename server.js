@@ -26,6 +26,7 @@ server.connection({
   port: 3000
 });
 
+// uncomment to generate database when server starts
 //generateDatabase();
 
 server.route({
@@ -41,9 +42,6 @@ server.start(function () {
 });
 
 function generateDatabase() {
-  var stories = [];
-  var comments = [];
-  var count = 0;
   for (var i = 121000; i < 122000; i++) {
     request.get(`https://hacker-news.firebaseio.com/v0/item/${i}.json?print=pretty`, function (err, response, body) {
       var body = JSON.parse(body);
