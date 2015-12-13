@@ -5,11 +5,11 @@ var Sequelize = require('sequelize');
 var pg = require('pg');
 var config = require('config');
 
-var storiesDb = require('./data/stories');
-var commentsDb = require('./data/comments');
-
 var StoryModel = require('./models/Story');
 var CommentModel = require('./models/Comment');
+
+var storiesDb = require('./data/stories');
+var commentsDb = require('./data/comments');
 
 //var Promise = require('bluebird');
 //var request = Promise.promisifyAll(require('request'));
