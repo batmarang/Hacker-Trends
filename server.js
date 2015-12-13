@@ -1,8 +1,10 @@
 var Hapi = require('hapi');
+var path = require('path');
 var request = require('request');
 var Sequelize = require('sequelize');
 var pg = require('pg');
 var config = require('config');
+
 var storiesDb = require('./data/stories');
 var commentsDb = require('./data/comments');
 
@@ -19,7 +21,6 @@ var Comment = sequelize.define('comments', CommentModel);
 Story.sync();
 Comment.sync();
 
-
 var server = new Hapi.Server();
 
 server.connection({
@@ -30,12 +31,31 @@ server.connection({
 // uncomment to generate database when server starts
 //generateDatabase();
 
-server.route({
-  method: 'GET',
-  path: '/',
-  handler: function (req, reply) {
-    reply('Hello, world!');
+//'inert' dependency to serve a static page (index.html)
+server.register(require('inert'), function (err) {
+  if (err) {
+    throw err;
   }
+
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: function (req, reply) {
+      reply.file('index.html')
+    }
+  });
+
+//Allows server to access chart assets
+  server.route({
+    method: 'GET',
+    path: '/charts/{param*}',
+    handler:  {
+      directory: {
+        path: path.join(__dirname, 'charts'),
+      }
+    }
+  });
+  
 });
 
 server.start(function () {
